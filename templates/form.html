@@ -15,11 +15,11 @@
         {% if final %}
         <div>
             <h2>The Sentiment of</h2> '{{ text1 }}' <h2>is {{ final }}% positive !</h2>
-            <h2>{{ k | safe }}</h2>
             {% else %}
             <p></p>
             {% endif %}
         </div>
+        {{ k | safe }}
         <span>Demo for Anh Tuấn. :D</span>
     </body>
     <img src="https://www.marscrowd.com/wp-content/uploads/2021/09/sentiment-analysis-banner-img.svg" alt="Girl in a jacket" style="width:auto;height:500px;display: block;margin-left: auto ;margin-right: auto;">
