@@ -3,18 +3,32 @@
         <title>{{ title }} Sentiment Analysis</title>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
         <link rel="stylesheet" type="text/css" href="style.css">
-        <img src="https://editor.analyticsvidhya.com/uploads/50131cover.jpg" alt="Girl in a jacket" style="width:auto;height:200px;display: block;margin-left: auto ;margin-right: auto;">
+        <img src="https://raw.githubusercontent.com/Tommy-Ngx/sentimentnlp/main/static/a.png" alt="Girl in a jacket" style="width:auto;height:120px;display: block;margin-left: auto ;margin-right: auto;">
     </head>
     <body>
         <h1>Welcome To Sentiment Analyzer</h1>
         <form method="POST">
-            <textarea name="text1" id="my_field1" class="output" placeholder="Say Something: ...." rows="10" cols="60"></textarea><br><br>
+            <!--<textarea name="text1" id="my_field1" class="output" placeholder="Say Something: ...." rows="10" cols="60">
+            </textarea><br><br>-->
 
+                <div class="mt-4" id="div_language">
+                  <a>Select Your Language: </a><select class="form-select bg-secondary text-light" id="select_language" onchange="updateCountry()"></select>
+
+                  <select class="form-select bg-secondary text-light mt-2" id="select_dialect"></select>
+                </div>
+                <textarea name="text1" id="my_field1" class="output" placeholder="Say Something: ...." rows="10" cols="60">
+            </textarea><br><br>
+                <div class="p-3" name="text1" style="border: 1px solid gray; height: 50px; border-radius: 6px;">
+                  <span id="final" class="text-light"></span>
+                  <span id="interim" class="text-secondary"></span>
+                </div>
+            </div>
             <!--<a class="btn btn-1" onclick="change1()" >🎙 Speak Now</a>
             <a class="btn btn-2"onclick="change2()">STOP</a>-->
-            <a class="btn btn-1"  >🎙 English</a>
-            <a class="btn btn-2" >Japanese</a>
-            <a class="btn btn-stop" >STOP</a>
+            <a class="btn btn-1"  id="start">🎙 Record</a>
+            <!--<a class="btn btn-2" >Japanese</a>
+            <a class="btn btn-3" >Vietnamese</a>-->
+            <a class="btn btn-stop" id="stop">STOP</a>
             <input class="example_a" type="submit">
 
         </form>
@@ -26,11 +40,11 @@
             {% endif %}
         </div>
         {{ k | safe }}
-        <span>Demo for Anh Tuấn. :D</span>
+        <span>Demo for Final Project. :D</span>
     </body>
     <img src="https://www.marscrowd.com/wp-content/uploads/2021/09/sentiment-analysis-banner-img.svg" alt="Girl in a jacket" style="width:auto;height:500px;display: block;margin-left: auto ;margin-right: auto;">
 
-    <script>
+    <!--<script>
         
         //function change1(){
         //    var recognition = new webkitSpeechRecognition();
@@ -98,5 +112,165 @@
             })
 
         }
+    </script>-->
+
+
+    <script>
+        var langs =
+        [
+         ['English',         ['en-AU', 'Australia']],
+         ['中文 Chinese',     ['cmn-Hans-CN', '普通话 (中国大陆)'],
+                             ['cmn-Hans-HK', '普通话 (香港)'],
+                             ['cmn-Hant-TW', '中文 (台灣)'],
+                             ['yue-Hant-HK', '粵語 (香港)']],
+         ['日本語 Japanese',  ['ja-JP']],
+         ['Vietnamese',      ['vi-VN']],
+         ];
+
+        let select_language = document.querySelector('#select_language');
+        let select_dialect = document.querySelector('#select_dialect');
+
+        for (var i = 0; i < langs.length; i++) {
+          select_language.options[i] = new Option(langs[i][0], i);
+        }
+        console.log ("select_language:", select_language.value)
+        //select_language.selectedIndex = select_language.selectedIndex;
+        select_language.selectedIndex = 0;
+        
+        updateCountry();
+        //select_dialect.selectedIndex = 1;
+
+        function updateCountry() {
+          console.log ("ha ha : ", select_language.selectedIndex, select_language.value )
+          //select_language.selectedIndex = select_language.selectedIndex;
+
+          for (var i = select_dialect.options.length - 1; i >= 0; i--) {
+            select_dialect.remove(i);
+          }
+          var list = langs[select_language.selectedIndex];
+          for (var i = 1; i < list.length; i++) {
+            select_dialect.options.add(new Option(list[i][1], list[i][0]));
+          }
+          select_dialect.style.visibility = list[1].length == 1 ? 'hidden' : 'visible';
+          updatelang();
+          //console.log('ddd', speechRecognition.lang);
+
+        };
+
+        function updatelang() {
+          console.log ("xxxx",select_language.selectedIndex);
+          //console.log ("ha ha : ", select_language.selectedIndex, select_language.value );
+          //select_language.selectedIndex = select_language.selectedIndex;
+          //if (select_language.selectedIndex  == "0"){
+          //  speechRecognition.lang = "en-AU";
+          
+          //}
+          //console.log(speechRecognition.lang);
+          if ("webkitSpeechRecognition" in window) {
+          let speechRecognition = new webkitSpeechRecognition();
+          let final_transcript = "";
+
+          speechRecognition.continuous = true;
+          speechRecognition.interimResults = true;
+          speechRecognition.lang = document.querySelector("#select_dialect").value;
+          //updatelang();
+          console.log('ddd', speechRecognition.lang);
+          //updatelang();
+          console.log('update', document.querySelector("#select_dialect").value);
+          ;
+          //speechRecognition.lang = "en-AU";
+          //console.log('ddd', speechRecognition.lang);
+
+          speechRecognition.onstart = () => {
+            document.querySelector("#status").style.display = "block";
+          };
+          speechRecognition.onerror = () => {
+            document.querySelector("#status").style.display = "none";
+            console.log("Speech Recognition Error");
+          };
+          speechRecognition.onend = () => {
+            document.querySelector("#status").style.display = "none";
+            console.log("Speech Recognition Ended");
+          };
+
+          speechRecognition.onresult = (event) => {
+            let interim_transcript = "";
+
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                final_transcript += event.results[i][0].transcript;
+              } else {
+                interim_transcript += event.results[i][0].transcript;
+              }
+            }
+            document.querySelector("#final").innerHTML = final_transcript;
+            document.querySelector("#interim").innerHTML = interim_transcript;
+            document.querySelector('.output').innerHTML = final_transcript;
+          };
+
+          document.querySelector("#start").onclick = () => {
+            speechRecognition.start();
+          };
+          document.querySelector("#stop").onclick = () => {
+            speechRecognition.stop();
+          };
+        } else {
+          console.log("Speech Recognition Not Available");
+        }
+
+        };
+        /**if ("webkitSpeechRecognition" in window) {
+          let speechRecognition = new webkitSpeechRecognition();
+          let final_transcript = "";
+
+          speechRecognition.continuous = true;
+          speechRecognition.interimResults = true;
+          speechRecognition.lang = document.querySelector("#select_dialect").value;
+          //updatelang();
+          console.log('ddd', speechRecognition.lang);
+          //updatelang();
+          console.log('update', document.querySelector("#select_dialect").value);
+          ;
+          //speechRecognition.lang = "en-AU";
+          //console.log('ddd', speechRecognition.lang);
+
+          speechRecognition.onstart = () => {
+            document.querySelector("#status").style.display = "block";
+          };
+          speechRecognition.onerror = () => {
+            document.querySelector("#status").style.display = "none";
+            console.log("Speech Recognition Error");
+          };
+          speechRecognition.onend = () => {
+            document.querySelector("#status").style.display = "none";
+            console.log("Speech Recognition Ended");
+          };
+
+          speechRecognition.onresult = (event) => {
+            let interim_transcript = "";
+
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                final_transcript += event.results[i][0].transcript;
+              } else {
+                interim_transcript += event.results[i][0].transcript;
+              }
+            }
+            document.querySelector("#final").innerHTML = final_transcript;
+            document.querySelector("#interim").innerHTML = interim_transcript;
+            document.querySelector('.output').innerHTML = final_transcript;
+          };
+
+          document.querySelector("#start").onclick = () => {
+            speechRecognition.start();
+          };
+          document.querySelector("#stop").onclick = () => {
+            speechRecognition.stop();
+          };
+        } else {
+          console.log("Speech Recognition Not Available");
+        }**/
+
+
     </script>
 </html>
