@@ -1,0 +1,228 @@
+
+<html>
+<!--<head>
+
+<style>
+.speech {border: 1px solid #DDD; width: 300px; padding: 0; margin: 0}
+.speech input {border: 0; width: 240px; display: inline-block; height: 30px;}
+.speech img {float: right; width: 40px }
+</style>
+
+</head>
+<body>
+
+<h1>This is a heading</h1>
+<form id=”searchBox” method=”get” action=”https://techmuzz.com”>
+<div class=”speech”>
+    <input type=”text” name=”s” id=”transcript” placeholder=”Speak” />
+    <img onclick=”startDictation()” src=”https://i.imgur.com/cHidSVu.gif”/>
+</div>
+
+
+</form>
+<p>This is a paragraph.</p>
+
+
+    <textarea name="answer1" id="my_field1" cols="80" rows="4"></textarea>
+    <button onclick="change1()">🎙 Speak Now</button>
+     <button onclick="stop()">Done</button>
+    <form action="" method="GET">
+    <br>
+    <input type="submit" name="" id="">
+</form> -->
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Anonystick - example speech to text javasctipt</title>
+
+</head>
+
+<body>
+    <!--<button class="btn-start">Start</button>
+    <button class="btn-start2">Japanese</button>
+    <button class="btn-stop">Stop</button>
+    <textarea class="output" cols="30" rows="10"></textarea>-->
+
+    <div class="mt-4" id="div_language">
+      <h2 class="mb-3 text-light">Select Language</h2>
+      <select class="form-select bg-secondary text-light" id="select_language" onchange="updateCountry()"></select>
+      <select class="form-select bg-secondary text-light mt-2" id="select_dialect"></select>
+    </div>
+    <h2 class="mt-4 text-light">Transcript</h2>
+    <div class="p-3" style="border: 1px solid gray; height: 300px; border-radius: 8px;">
+      <span id="final" class="text-light"></span>
+      <span id="interim" class="text-secondary"></span>
+    </div>
+    <div class="mt-4">
+      <button class="btn btn-success" id="start">Start</button>
+      <button class="btn btn-danger" id="stop">Stop</button>
+      <p id="status" class="lead mt-3 text-light" style="display: none">Listenting ...</p>
+    </div>
+
+</body>
+
+
+<script>
+var langs =
+[
+ ['English',         ['en-AU', 'Australia']],
+ ['中文',             ['cmn-Hans-CN', '普通话 (中国大陆)'],
+                     ['cmn-Hans-HK', '普通话 (香港)'],
+                     ['cmn-Hant-TW', '中文 (台灣)'],
+                     ['yue-Hant-HK', '粵語 (香港)']],
+ ['日本語',           ['ja-JP']],
+ ['Vietnamese',      ['vi-VN']],
+ ['Lingua latīna',   ['la']]];
+
+let select_language = document.querySelector('#select_language');
+let select_dialect = document.querySelector('#select_dialect');
+
+for (var i = 0; i < langs.length; i++) {
+  select_language.options[i] = new Option(langs[i][0], i);
+};
+
+select_language.selectedIndex = 0;
+updateCountry();
+//select_dialect.selectedIndex = 3;
+
+function updateCountry() {
+  for (var i = select_dialect.options.length - 1; i >= 0; i--) {
+    select_dialect.remove(i);
+  }
+  var list = langs[select_language.selectedIndex];
+  for (var i = 1; i < list.length; i++) {
+    select_dialect.options.add(new Option(list[i][1], list[i][0]));
+  }
+  select_dialect.style.visibility = list[1].length == 1 ? 'hidden' : 'visible';
+};
+
+
+if ("webkitSpeechRecognition" in window) {
+  let speechRecognition = new webkitSpeechRecognition();
+  let final_transcript = "";
+
+  speechRecognition.continuous = true;
+  speechRecognition.interimResults = true;
+  speechRecognition.lang = document.querySelector("#select_dialect").value;
+
+  speechRecognition.onstart = () => {
+    document.querySelector("#status").style.display = "block";
+  };
+  speechRecognition.onerror = () => {
+    document.querySelector("#status").style.display = "none";
+    console.log("Speech Recognition Error");
+  };
+  speechRecognition.onend = () => {
+    document.querySelector("#status").style.display = "none";
+    console.log("Speech Recognition Ended");
+  };
+
+  speechRecognition.onresult = (event) => {
+    let interim_transcript = "";
+
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        final_transcript += event.results[i][0].transcript;
+      } else {
+        interim_transcript += event.results[i][0].transcript;
+      }
+    }
+    document.querySelector("#final").innerHTML = final_transcript;
+    document.querySelector("#interim").innerHTML = interim_transcript;
+  };
+
+  document.querySelector("#start").onclick = () => {
+    speechRecognition.start();
+  };
+  document.querySelector("#stop").onclick = () => {
+    speechRecognition.stop();
+  };
+} else {
+  console.log("Speech Recognition Not Available");
+}
+
+</script>
+<!--
+<script>
+//function change1(){
+//    var recognition = new webkitSpeechRecognition();
+//    recognition.lang = "en-GB";
+
+//    recognition.onresult = function(event) {
+        // console.log(event);
+//        document.getElementById('my_field1').value = event.results[0][0].transcript;
+//    }
+//    recognition.start();
+//}
+//function stop(){
+//    if(a == 'stop') 
+//         return;
+//}
+
+//var recognition = new webkitSpeechRecognition();
+//recognition.lang = 'en-US'; // ở đây ví dụ là Mỹ, còn Việt Nam là 'vi-VN' nhé.
+// start
+//recognition.start();
+// Stop
+//recognition.stop();
+//recognition.lang = 'vi-VN';
+
+class SpeechRecognitionApi{
+    constructor(options) {
+        const SpeechToText = window.speechRecognition || window.webkitSpeechRecognition;
+        this.speechApi = new SpeechToText();
+        this.speechApi.continuous = true;
+        this.speechApi.interimResults = false;
+        this.output = options.output ? options.output : document.createElement('div');
+        console.log(this.output)
+        this.speechApi.onresult = (event)=> { 
+            console.log(event);
+            var resultIndex = event.resultIndex;
+            var transcript = event.results[resultIndex][0].transcript;
+
+            console.log('transcript>>', transcript);
+            console.log(this.output)
+            this.output.textContent = transcript;
+
+            
+        }
+    }
+    init(){
+        this.speechApi.start();
+    }
+    stop(){
+        this.speechApi.stop();
+    }
+}
+
+window.onload = function(){
+    recognition.lang = 'vi-VN';
+    var speech = new SpeechRecognitionApi({
+        output: document.querySelector('.output')
+    })
+
+    document.querySelector('.btn-start').addEventListener('click', function () {
+        speech.init();
+        //lan1 = 'en-US';
+        //recognition.lang = 'en-US';
+    })
+    document.querySelector('.btn-start2').addEventListener('click', function () {
+        speech.init()
+        //lan1 = 'vi-VN';
+        //recognition.lang = 'vi-VN';
+        
+    })
+
+    document.querySelector('.btn-stop').addEventListener('click', function () {
+        speech.stop()
+    })
+
+}
+</script>-->
+
+</html> 
+
+
